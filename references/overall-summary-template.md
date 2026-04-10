@@ -36,7 +36,13 @@ Suggested filename:
 - where a new engineer should start
 - what documents to read next depending on role or goal
 
-## 6. Open Questions
+## 6. Document Lineage
+
+- which important documents were newly created
+- which important documents were updated from existing repository documentation
+- which old documents were left unused because the workflow chose rebuild mode
+
+## 7. Open Questions
 
 - the most important unresolved items that still need human confirmation
 

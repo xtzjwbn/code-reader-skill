@@ -48,6 +48,25 @@ Include:
 
 Also include the planned document ordering and filenames for the next phase. Do not bind number ranges to fixed categories in advance. Instead, choose numbering based on the actual repository reading order and subsystem split discovered during the scan.
 
+## 04-existing-docs-inventory.md
+
+Generate this file when existing-document detection is enabled.
+
+Include:
+
+- discovered documentation files that appear related to repository understanding
+- the topic each document seems to cover
+- mapping from each discovered document to the target document set or subsystem
+- apparent completeness for each document: complete, partial, stale-suspected, or unclear
+- recommended code-validation scope for each document
+- final user-selected handling mode for each relevant document set: `复用`, `续写`, or `重建`
+
+Rules:
+
+- determine similarity by topic coverage and document responsibility first
+- use filename and directory only as supporting signals
+- if only fragments exist, still record them as partial existing documentation
+
 ## Rules
 
 - Keep these files concise but concrete.
@@ -56,3 +75,4 @@ Also include the planned document ordering and filenames for the next phase. Do 
 - Require subagents to read them before producing subsystem writeups.
 - Keep the numbering scheme stable once assigned so later documents do not drift.
 - Record excluded paths or systems early so subagents can avoid them.
+- When existing documents are found, require the workflow to pause for a user decision before deep subsystem reading proceeds.

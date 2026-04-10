@@ -25,6 +25,7 @@ Before reading the repository in depth, ask the user short questions about:
 - what language to use for the documentation
 - where to store the generated documentation
 - whether to enable multi-agent parallel reading
+- whether to detect existing repository documentation before starting the main reading flow
 
 Also ask whether any repository areas should be excluded from reading or documentation. Accept exclusions such as:
 
@@ -42,9 +43,12 @@ Default assumptions if the user does not specify them:
 - documentation language: Chinese
 - output directory: `/docs` under the repository root
 - multi-agent parallel reading: enabled
+- existing-document detection: enabled
 - exclusions: none
 
 Treat these as execution parameters for the whole task and keep them consistent across all agent outputs.
+
+If the user is not asking for a full repository reading pass, check whether the request is a targeted documentation update instead. A targeted update is valid when the user wants an existing document to be enriched with information about a specific keyword, identifier, config key, event name, job name, model name, or other grep-friendly term.
 
 If multi-agent parallel reading is enabled, require Codex to use multi-agent parallel reading for the repository task:
 
@@ -64,6 +68,12 @@ Read enough of the repository to choose a safe split:
 - build, test, deploy, and CI files
 - major configuration directories
 
+If existing-document detection is enabled, also scan:
+
+- the chosen output directory
+- common repository documentation locations such as `docs/`, `doc/`, `documentation/`, `knowledge-base/`, `kb/`
+- markdown files near major subsystems when they appear to document runtime behavior, architecture, or ownership
+
 Use this scan to identify:
 
 - technology stack
@@ -71,6 +81,7 @@ Use this scan to identify:
 - service or subsystem boundaries
 - shared libraries and cross-cutting infrastructure
 - likely P0 paths that deserve deeper reading first
+- whether similar documentation already exists for major repository topics
 
 Do not delegate before you understand the split well enough to avoid overlap.
 
@@ -83,8 +94,27 @@ Turn this pre-reading scan into visible documentation artifacts. Before any deep
 - subagent assignment plan
 - reading priority plan
 - explicit excluded scope
+- existing-document inventory and topic mapping
 
 These files are not optional. The user must be able to inspect the repository structure and the proposed split before or while the deeper reading proceeds.
+
+When existing-document detection is enabled, treat existing documentation as discoverable input to the workflow, not as trusted truth. Code remains the source of truth.
+
+If similar documentation is found for any important topic, pause and ask the user how to proceed before deep reading starts. The allowed handling modes are:
+
+- `reuse`: keep the existing document as the base and revise it in place based on code validation
+- `continue`: keep the existing document and continue writing missing or incomplete sections in place, while still correcting clearly wrong content using code evidence
+- `rebuild`: ignore the old document as the output base, but allow it to be read as supporting context while generating a fresh standardized document set
+
+When the user answers with localized terms, map them to these three handling modes before proceeding.
+
+Do not assume a mode automatically when similar documentation exists, even if only part of the document set already exists.
+
+If the user asked for a targeted keyword update to existing documentation, use the scan to identify:
+
+- which existing document is the best target for the keyword
+- which subsystem or cross-system topic the keyword appears to belong to
+- which code areas should be read to validate and enrich the document
 
 ### 3. Define the Agent Roles
 
@@ -131,6 +161,8 @@ Make sure the contract also states:
 - the output directory for final artifacts
 - the required pre-reading artifact filenames and their purpose
 - the excluded scope and how to handle references to excluded content
+- the existing-document handling mode chosen by the user, if applicable
+- the rule that code evidence overrides stale or conflicting documentation
 
 ### 5. Split the Repository Pragmatically
 
@@ -160,6 +192,7 @@ Write the split decision down as markdown, including:
 - what each subsystem boundary includes
 - what shared code is intentionally handled separately
 - what cross-system dependencies require later synthesis
+- which existing documents map to which subsystems or cross-system topics
 
 ### 6. Delegate with Bounded Prompts
 
@@ -170,6 +203,8 @@ When spawning system-reader subagents, give each agent:
 - the output template it must follow
 - the instruction to cite file paths
 - the instruction to separate facts from inferences
+- the instruction to compare any mapped existing documents against code before trusting them
+- when applicable, the instruction to enrich an existing document for a specific keyword by reading code first
 
 Do not ask subagents to produce the final repository-wide document. Ask them to produce subsystem writeups that the total-control agent can merge.
 
@@ -178,6 +213,23 @@ Use the template in [references/system-template.md](./references/system-template
 Every system-reader subagent must read the pre-reading artifacts first so it works from the same repository map, subsystem split, and scope definition.
 
 Every system-reader subagent must also respect the exclusion list. Do not read excluded files or directories in detail, and do not expand into excluded systems unless the user explicitly overrides the exclusion.
+
+When a subsystem has mapped existing documentation and the user chose `reuse` or `continue`, the system-reader subagent must:
+
+- read the mapped existing document first
+- extract subsystem boundaries, feature claims, call-chain claims, configuration claims, and risk claims as initial hypotheses
+- validate those hypotheses against code
+- explicitly record matches, mismatches, omissions, and corrected conclusions
+
+When the user chose `rebuild`, existing documentation may still be read as supporting context, but it must not define the target output structure.
+
+When the user asks to add information for a specific keyword to an existing document, the responsible reader must:
+
+- locate the most relevant existing document or subsystem document for that keyword
+- read the existing keyword coverage, if any
+- read the relevant code paths tied to that keyword
+- update or append the keyword entry with code-backed details
+- expand nearby feature descriptions when the keyword reveals missing implementation context
 
 ### 7. Read Features Through Real Code Paths
 
@@ -194,6 +246,7 @@ Track:
 - dependencies on other subsystems
 - tests that confirm intended behavior
 - mismatches between docs and code
+- stable subsystem keywords that a user is likely to grep for in the codebase
 
 For important features, document implementation details at a deeper level:
 
@@ -203,6 +256,24 @@ For important features, document implementation details at a deeper level:
 - how payloads, domain objects, or persisted state change across the flow
 - what side effects occur, such as writes, remote calls, emitted events, cache updates, or scheduled jobs
 - what error paths, retries, permission checks, or consistency safeguards exist
+
+If existing documentation described the feature already, compare the documented behavior against the actual code path and record:
+
+- what the document claimed
+- what the code confirmed
+- what the document got wrong or omitted
+
+For each subsystem, produce a keyword index section that helps a user jump from a grep result back into the documentation. For each important keyword, include:
+
+- the canonical keyword
+- synonyms, aliases, abbreviations, or other grep-friendly variants that should map to the same explanation
+- why the keyword matters in this subsystem
+- the most relevant files, classes, functions, handlers, or jobs tied to that keyword
+- the logic or behavior the keyword maps to
+
+When multiple terms point to the same underlying concept, prefer one canonical keyword entry with multiple synonyms instead of duplicating similar entries.
+
+If the user explicitly requests a keyword to be added or expanded, prioritize that keyword even if it was not part of the original subsystem keyword set.
 
 If a claim depends only on naming or comments, mark it as `[inference]` unless code confirms it.
 
@@ -215,6 +286,8 @@ After subsystem writeups arrive, reconcile:
 - incompatible granularity
 - cross-system flows that no single reader could see in isolation
 - shared infra or platform modules that multiple readers touched
+- mismatches between existing documentation and verified code behavior
+- keyword entries that point to weak or incomplete code explanations
 
 Send targeted follow-up questions to subagents when needed. Avoid rereading everything from scratch if the gap is narrow and well scoped.
 
@@ -230,8 +303,11 @@ In addition to the final consolidated documentation, always generate markdown fi
 - `01-structure-and-stack.md`
 - `02-system-split-plan.md`
 - `03-agent-assignment-plan.md`
+- `04-existing-docs-inventory.md` when existing-document detection is enabled
 
 These files should be created before deep subsystem reading, then updated if the understanding changes materially.
+
+Use [references/existing-docs-inventory-template.md](./references/existing-docs-inventory-template.md) for the existing-document inventory artifact.
 
 For all later documents, keep numeric prefixes for stable ordering, but do not hard-code number ranges to fixed categories such as frontend, backend, or infra. Assign numbers based on the repository's actual reading order and system decomposition after the initial scan.
 
@@ -245,6 +321,20 @@ Choose the sequence after the repository scan, write it down in the planning art
 
 When exclusions exist, do not assign subagents to excluded scope. If excluded content is referenced by included systems, mention the dependency only at a high level and mark it as excluded rather than reading it in detail.
 
+If existing documentation is found, record for each relevant document:
+
+- detected topic coverage
+- mapped target document or subsystem
+- apparent completeness: complete, partial, stale-suspected, or unclear
+- user-selected handling mode
+
+When the task is a targeted keyword update, record:
+
+- requested keyword
+- target document chosen for update
+- code areas read for enrichment
+- whether the keyword entry was newly added or expanded
+
 After all subsystem writeups are complete and the final consolidated documentation has been assembled, generate one additional markdown file for executive-level and onboarding-level overview:
 
 - `99-overall-summary.md`
@@ -256,6 +346,7 @@ This file should provide a concise but complete cross-document overview of:
 - what the most important feature and runtime flows are
 - what the key operational and architectural risks are
 - what a new engineer should read first
+- which important documents were newly created versus updated from existing materials
 
 Treat this as a top-down guide to the entire documentation set, not as a replacement for the detailed final document.
 
@@ -291,6 +382,10 @@ This agent should review subagent outputs and point out:
 - vague descriptions
 - inconsistent names
 - feature and system levels being mixed together
+- existing-document claims that were accepted without code validation
+- missing doc-code mismatch records when old documents were used
+- missing or low-value subsystem keywords that do not actually help code lookup
+- duplicate keyword entries that should have been merged under one canonical keyword with synonyms
 
 ### System-Reader Prompt Pattern
 
@@ -299,6 +394,10 @@ Use a prompt like:
 ```text
 You are the reader for the assigned subsystem only. Read the code in your scope, identify the subsystem boundary, responsibilities, entrypoints, dependencies, feature flows, configuration, data structures, tests, risks, and open questions. For each important feature, explain the implementation in enough detail that another engineer can follow the real code path, including key functions or classes, step-by-step flow responsibilities, data changes, side effects, and error paths. Follow the provided template exactly. Cite concrete file paths. Mark every uncertain statement as [inference] or [needs-confirmation].
 ```
+
+Also require the reader to extract a practical keyword index for the subsystem so users can grep a keyword in the repo and quickly find the matching documentation explanation.
+
+If the user asked to add or expand a specific keyword in existing documentation, require the reader to update that keyword entry using code-backed evidence rather than only reorganizing existing prose.
 
 Assign each reader a disjoint scope. Explicitly tell it not to rewrite or reinterpret other subsystem boundaries unless the assigned scope requires noting a dependency.
 
@@ -313,6 +412,11 @@ Reject or revise subsystem writeups that:
 - blur facts and guesses
 - fail to cite evidence
 - ignore tests, configuration, or external integrations when they materially affect behavior
+- reuse old documentation claims without validating them against code
+- fail to distinguish documented claims from code-verified findings when existing documents were in scope
+- omit a useful keyword index for the subsystem
+- update a keyword entry without reading the relevant code paths
+- fail to merge obvious synonym terms into a single keyword explanation
 
 ## Output Rules
 
@@ -326,6 +430,11 @@ Reject or revise subsystem writeups that:
 - Keep pre-reading artifacts separate from subsystem deep dives and the final merged document.
 - Keep the top-down overview summary separate from both the detailed final document and the pre-reading artifacts.
 - If exclusions exist, state them clearly in the planning docs and do not silently read excluded scope.
+- If existing documentation is found, record detection results and the chosen handling mode before deep reading starts.
+- When existing documentation is used, make doc-code mismatches explicit instead of silently normalizing them away.
+- Ensure each subsystem document includes a keyword index that supports grep-driven lookup.
+- Allow multiple synonym grep terms to point to one canonical keyword explanation.
+- For targeted keyword updates, update the keyword entry and surrounding logic explanation based on code evidence.
 
 ## Completion Checklist
 
@@ -335,7 +444,11 @@ Reject or revise subsystem writeups that:
 - core user or business flows are traced through code
 - shared infrastructure is documented once at the correct level
 - pre-reading artifacts for index, structure, split, and agent plan exist as markdown files
+- existing-document inventory exists when document detection is enabled
 - final document merges subsystem writeups into one coherent knowledge base
 - top-down overview summary exists as a separate markdown file after all detailed work is complete
 - unresolved questions are listed separately from confirmed findings
 - user-specified exclusions are documented and respected throughout the workflow
+- existing documents, when present, are either reused, continued, or rebuilt according to the user-selected mode
+- each subsystem writeup includes actionable keywords mapped to code and logic
+- keyword-specific update requests enrich existing documents with newly verified code-backed information

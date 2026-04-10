@@ -35,47 +35,54 @@ Use this structure when the total-control agent merges subsystem writeups into t
 
 One subsection per subsystem using a normalized summary of the subsystem writeups.
 
-## 6. Core Features and End-to-End Flows
+## 6. Existing Documentation Reuse and Revision
+
+- which prior documents were discovered
+- which ones were reused, continued, or rebuilt
+- major doc-code mismatches that changed the final understanding
+- where the final output intentionally diverged from older documentation
+
+## 7. Core Features and End-to-End Flows
 
 Focus on the highest-value flows across subsystem boundaries.
 
-## 7. Configuration Model
+## 8. Configuration Model
 
 - environment variables
 - config files
 - feature flags
 - secret or deployment assumptions
 
-## 8. Data Model and State
+## 9. Data Model and State
 
 - shared entities
 - storage systems
 - important state transitions
 
-## 9. Build, Test, Release, and Deployment
+## 10. Build, Test, Release, and Deployment
 
 - local run path
 - build path
 - test strategy
 - CI and release flow
 
-## 10. External Integrations
+## 11. External Integrations
 
 - third-party APIs
 - infrastructure dependencies
 - internal services outside the repository
 
-## 11. Risks, Technical Debt, and Constraints
+## 12. Risks, Technical Debt, and Constraints
 
 - architectural risks
 - fragile areas
 - hidden coupling
 - operational concerns
 
-## 12. Open Questions
+## 13. Open Questions
 
 Keep unresolved items separate from confirmed findings.
 
-## 13. Suggested Onboarding Path
+## 14. Suggested Onboarding Path
 
 Recommend the order a new engineer should read the code and docs.
