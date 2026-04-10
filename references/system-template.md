@@ -31,8 +31,17 @@ For each important feature:
 - feature name
 - trigger or entrypoint
 - main call chain in the form `entry -> layer -> core processing -> output or side effect`
+- key files, classes, functions, handlers, or jobs involved
+- what each major step in the call chain is responsible for
 - important state, entities, or payloads
+- input validation and decision points
+- data transformation or state mutation through the flow
+- storage writes, external API calls, events, cache operations, or other side effects
 - error handling or boundary conditions
+- concurrency, idempotency, retry, transaction, permission, or consistency considerations when relevant
+- tests or code paths that provide evidence for the implementation details
+
+Do not keep feature descriptions at a surface level. For important features, explain the implementation path with enough detail that another engineer can follow the code without re-discovering the whole flow from scratch.
 
 ## 5. Runtime and Configuration
 
@@ -51,6 +60,8 @@ For each important feature:
 
 - tests that validate key behavior
 - file paths supporting the major claims
+
+For important features, cite the most relevant implementation files, not just top-level directories.
 
 ## 8. Risks and Constraints
 

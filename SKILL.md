@@ -18,12 +18,13 @@ If the user did not explicitly ask for subagents, keep the same workflow but exe
 
 ## Workflow
 
-### 1. Confirm Output Language and Destination
+### 1. Confirm Execution Parameters
 
-Before reading the repository in depth, ask the user two short questions:
+Before reading the repository in depth, ask the user short questions about:
 
 - what language to use for the documentation
 - where to store the generated documentation
+- whether to enable multi-agent parallel reading
 
 Also ask whether any repository areas should be excluded from reading or documentation. Accept exclusions such as:
 
@@ -40,9 +41,18 @@ Default assumptions if the user does not specify them:
 
 - documentation language: Chinese
 - output directory: `/docs` under the repository root
+- multi-agent parallel reading: enabled
 - exclusions: none
 
 Treat these as execution parameters for the whole task and keep them consistent across all agent outputs.
+
+If multi-agent parallel reading is enabled, require Codex to use multi-agent parallel reading for the repository task:
+
+- keep the current thread as the total-control agent
+- spawn one consistency-control subagent
+- spawn multiple system-reader subagents with disjoint scopes whenever the repository is large enough to benefit
+
+If the user explicitly disables multi-agent parallel reading, keep the same documentation workflow but execute it in a single thread without spawning subagents.
 
 ### 2. Scan Before Splitting
 
@@ -185,6 +195,15 @@ Track:
 - tests that confirm intended behavior
 - mismatches between docs and code
 
+For important features, document implementation details at a deeper level:
+
+- the concrete entrypoints, handlers, classes, and functions involved
+- what each stage of the flow is doing
+- where inputs are validated and where branching decisions happen
+- how payloads, domain objects, or persisted state change across the flow
+- what side effects occur, such as writes, remote calls, emitted events, cache updates, or scheduled jobs
+- what error paths, retries, permission checks, or consistency safeguards exist
+
 If a claim depends only on naming or comments, mark it as `[inference]` unless code confirms it.
 
 ### 8. Reconcile Cross-System Knowledge
@@ -278,7 +297,7 @@ This agent should review subagent outputs and point out:
 Use a prompt like:
 
 ```text
-You are the reader for the assigned subsystem only. Read the code in your scope, identify the subsystem boundary, responsibilities, entrypoints, dependencies, feature flows, configuration, data structures, tests, risks, and open questions. Follow the provided template exactly. Cite concrete file paths. Mark every uncertain statement as [inference] or [needs-confirmation].
+You are the reader for the assigned subsystem only. Read the code in your scope, identify the subsystem boundary, responsibilities, entrypoints, dependencies, feature flows, configuration, data structures, tests, risks, and open questions. For each important feature, explain the implementation in enough detail that another engineer can follow the real code path, including key functions or classes, step-by-step flow responsibilities, data changes, side effects, and error paths. Follow the provided template exactly. Cite concrete file paths. Mark every uncertain statement as [inference] or [needs-confirmation].
 ```
 
 Assign each reader a disjoint scope. Explicitly tell it not to rewrite or reinterpret other subsystem boundaries unless the assigned scope requires noting a dependency.
@@ -290,6 +309,7 @@ Reject or revise subsystem writeups that:
 - only restate file names without explaining behavior
 - summarize README text without validating code
 - omit key entrypoints or call chains
+- describe features only at a surface level without enough implementation detail
 - blur facts and guesses
 - fail to cite evidence
 - ignore tests, configuration, or external integrations when they materially affect behavior

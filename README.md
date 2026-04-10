@@ -10,21 +10,25 @@
 - Supports a total-control agent, a consistency-control agent, and multiple system-reader subagents.
 - Generates pre-reading markdown artifacts before deep reading starts.
 - Lets the user choose documentation language and output directory.
+- Asks whether multi-agent parallel reading should be enabled and defaults to enabled.
 - Lets the user exclude directories, files, systems, or other scopes from reading.
 - Uses evidence-backed subsystem writeups and final merged documentation.
+- Requires subsystem feature descriptions to explain implementation details, not just feature names and responsibilities.
 - Produces a final top-down overview summary after all detailed work is complete.
 
 - 将仓库阅读任务按“工程交接”标准执行，而不是停留在表层总结。
 - 支持总控 agent、一致性控制 agent 和多个系统阅读 subagent 协作。
 - 在深度阅读前先生成前期扫描与规划文档。
 - 支持用户指定文档语言和输出目录。
+- 会询问是否开启多 agent 并行阅读，默认开启。
 - 支持用户排除不希望阅读的目录、文件、系统或其他范围。
 - 基于代码证据生成子系统文档与最终整合文档。
+- 要求对子系统中的重要功能写出更细的实现说明，而不只是功能名称和职责概述。
 - 在所有细节文档完成后，再生成一份顶层纵览总结。
 
 ## Workflow | 工作流
 
-1. Confirm documentation language, output directory, and excluded scope.
+1. Confirm documentation language, output directory, whether multi-agent parallel reading is enabled, and excluded scope.
 2. Scan the repository and generate pre-reading artifacts.
 3. Define the repository split and subagent assignment plan.
 4. Ask a consistency-control agent to define the output contract.
@@ -33,7 +37,7 @@
 7. Merge everything into a final repository document.
 8. Write a separate top-down summary document for fast global review.
 
-1. 确认文档语言、输出目录和排除范围。
+1. 确认文档语言、输出目录、是否开启多 agent 并行阅读，以及排除范围。
 2. 扫描仓库并生成前期扫描文档。
 3. 制定系统拆分方案和 subagent 分工方案。
 4. 由一致性控制 agent 制定统一输出规范。
@@ -46,12 +50,14 @@
 
 - Documentation language defaults to Chinese.
 - Documentation output directory defaults to `/docs` under the repository root.
+- Multi-agent parallel reading defaults to enabled.
 - Exclusions default to `none`.
 - Important claims should be marked as `[fact]`, `[inference]`, or `[needs-confirmation]`.
 - Numbered filenames are kept in stable order, but later numbering is assigned by AI according to the repository's actual reading order rather than fixed category ranges.
 
 - 文档语言默认是中文。
 - 文档输出目录默认是仓库根目录下的 `/docs`。
+- 多 agent 并行阅读默认开启。
 - 默认没有排除范围。
 - 重要结论应标记为 `[fact]`、`[inference]` 或 `[needs-confirmation]`。
 - 文档文件名保留顺序编号，但后续编号不绑定固定类别，而是由 AI 根据仓库实际阅读顺序自主分配。
@@ -82,6 +88,10 @@ These documents make the repository map, split strategy, and subagent scopes vis
 Later numbered markdown files are assigned according to the actual repository reading order and subsystem decomposition. They cover subsystem writeups, cross-system flows, and other detailed outputs.
 
 后续编号文档由 AI 根据真实阅读顺序和系统拆分结果分配，用于承载各子系统说明、跨系统链路和其他详细产物。
+
+For important subsystem features, the writeup should include concrete implementation detail such as entrypoints, key functions or classes, step-by-step flow responsibilities, data changes, side effects, and error paths.
+
+对于重要子系统功能，文档应包含更具体的实现细节，例如入口、关键函数或类、分步处理职责、数据变化、副作用和错误路径。
 
 ### Final Outputs | 最终产物
 
@@ -153,11 +163,11 @@ Excluded scope is recorded in the planning docs and must be respected by all sub
 ## Example Usage | 使用示例
 
 ```text
-$code-reader-skill Please read this repository with a total-control agent, a consistency-control agent, and subsystem readers. Ask for documentation language, output directory, and excluded scope first. Then generate the pre-reading markdown files, assign subagents, and produce the full documentation set.
+$code-reader-skill Please read this repository with a total-control agent, a consistency-control agent, and subsystem readers. Ask for documentation language, output directory, whether multi-agent parallel reading should stay enabled, and excluded scope first. Then generate the pre-reading markdown files, assign subagents, and produce the full documentation set.
 ```
 
 ```text
-$code-reader-skill 请用总控 agent、一致性控制 agent 和系统阅读 subagent 完整阅读当前仓库。先确认文档语言、输出目录和排除范围，再生成前期扫描文档、分配 subagent，并完成整套知识文档。
+$code-reader-skill 请用总控 agent、一致性控制 agent 和系统阅读 subagent 完整阅读当前仓库。先确认文档语言、输出目录、是否开启多 agent 并行阅读，以及排除范围，再生成前期扫描文档、分配 subagent，并完成整套知识文档。
 ```
 
 ## Installation | 安装
