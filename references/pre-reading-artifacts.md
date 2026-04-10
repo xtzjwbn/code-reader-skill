@@ -57,9 +57,11 @@ Include:
 - discovered documentation files that appear related to repository understanding
 - the topic each document seems to cover
 - mapping from each discovered document to the target document set or subsystem
+- documents that look like strong parent-document candidates for future child detail documents
 - apparent completeness for each document: complete, partial, stale-suspected, or unclear
 - recommended code-validation scope for each document
 - final user-selected handling mode for each relevant document set: `复用`, `续写`, or `重建`
+- detail topics that appear suitable for child-document expansion
 
 Rules:
 

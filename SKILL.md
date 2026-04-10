@@ -50,6 +50,20 @@ Treat these as execution parameters for the whole task and keep them consistent 
 
 If the user is not asking for a full repository reading pass, check whether the request is a targeted documentation update instead. A targeted update is valid when the user wants an existing document to be enriched with information about a specific keyword, identifier, config key, event name, job name, model name, or other grep-friendly term.
 
+Also check whether the request is a detail-document expansion from existing system docs. This task type is valid when the user wants a dedicated knowledge document for:
+
+- a subsystem detail
+- a specific feature inside an existing system
+- an implementation detail
+- a call chain
+- a configuration topic
+- a concept, exception path, state transition, or data flow that deserves its own focused document
+
+Treat this as different from a keyword-only update:
+
+- keyword update: enrich an existing keyword entry inside an existing document
+- detail-document expansion: create a new standalone child document for the requested detail
+
 If multi-agent parallel reading is enabled, require Codex to use multi-agent parallel reading for the repository task:
 
 - keep the current thread as the total-control agent
@@ -115,6 +129,13 @@ If the user asked for a targeted keyword update to existing documentation, use t
 - which existing document is the best target for the keyword
 - which subsystem or cross-system topic the keyword appears to belong to
 - which code areas should be read to validate and enrich the document
+
+If the user asked for a detail-document expansion from existing system docs, use the scan to identify:
+
+- the most relevant existing parent system document
+- whether the existing documentation tree already has a subsystem-specific child folder structure
+- which code areas should be read to produce the new child document
+- whether the parent document already has a short section that should link to the new child document
 
 ### 3. Define the Agent Roles
 
@@ -205,6 +226,7 @@ When spawning system-reader subagents, give each agent:
 - the instruction to separate facts from inferences
 - the instruction to compare any mapped existing documents against code before trusting them
 - when applicable, the instruction to enrich an existing document for a specific keyword by reading code first
+- when applicable, the instruction to create a new detail child document from an existing system document after reading both the document and the relevant code
 
 Do not ask subagents to produce the final repository-wide document. Ask them to produce subsystem writeups that the total-control agent can merge.
 
@@ -230,6 +252,15 @@ When the user asks to add information for a specific keyword to an existing docu
 - read the relevant code paths tied to that keyword
 - update or append the keyword entry with code-backed details
 - expand nearby feature descriptions when the keyword reveals missing implementation context
+
+When the user asks for a detail-document expansion from an existing system document, the responsible reader must:
+
+- locate the most relevant parent system document
+- read the parent document to recover context, terminology, and current scope boundaries
+- read the relevant code paths for the requested detail
+- create a new standalone child document under the system-specific child folder
+- update the parent system document with a link to the child document and a short summary
+- preserve any existing brief explanation in the parent document unless the user explicitly asked for structural refactoring
 
 ### 7. Read Features Through Real Code Paths
 
@@ -275,6 +306,8 @@ When multiple terms point to the same underlying concept, prefer one canonical k
 
 If the user explicitly requests a keyword to be added or expanded, prioritize that keyword even if it was not part of the original subsystem keyword set.
 
+If the user explicitly requests a dedicated detail document, prioritize producing a focused child document over expanding the parent document inline.
+
 If a claim depends only on naming or comments, mark it as `[inference]` unless code confirms it.
 
 ### 8. Reconcile Cross-System Knowledge
@@ -288,6 +321,7 @@ After subsystem writeups arrive, reconcile:
 - shared infra or platform modules that multiple readers touched
 - mismatches between existing documentation and verified code behavior
 - keyword entries that point to weak or incomplete code explanations
+- child detail documents that are not clearly linked back to their parent system documents
 
 Send targeted follow-up questions to subagents when needed. Avoid rereading everything from scratch if the gap is narrow and well scoped.
 
@@ -327,6 +361,14 @@ If existing documentation is found, record for each relevant document:
 - mapped target document or subsystem
 - apparent completeness: complete, partial, stale-suspected, or unclear
 - user-selected handling mode
+
+When the task is a detail-document expansion, record:
+
+- requested detail topic
+- chosen parent system document
+- chosen child folder path
+- new child document path
+- whether the parent document was updated with a link and summary
 
 When the task is a targeted keyword update, record:
 
@@ -399,6 +441,8 @@ Also require the reader to extract a practical keyword index for the subsystem s
 
 If the user asked to add or expand a specific keyword in existing documentation, require the reader to update that keyword entry using code-backed evidence rather than only reorganizing existing prose.
 
+If the user asked for a dedicated detail child document, require the reader to read the parent system document first, then read the relevant code, then produce the child document and parent-document backlink summary using code-backed evidence.
+
 Assign each reader a disjoint scope. Explicitly tell it not to rewrite or reinterpret other subsystem boundaries unless the assigned scope requires noting a dependency.
 
 ## Quality Bar
@@ -417,6 +461,8 @@ Reject or revise subsystem writeups that:
 - omit a useful keyword index for the subsystem
 - update a keyword entry without reading the relevant code paths
 - fail to merge obvious synonym terms into a single keyword explanation
+- create a detail child document without linking it back to the parent system document
+- create a detail child document without reading both the parent document and the relevant code
 
 ## Output Rules
 
@@ -435,6 +481,7 @@ Reject or revise subsystem writeups that:
 - Ensure each subsystem document includes a keyword index that supports grep-driven lookup.
 - Allow multiple synonym grep terms to point to one canonical keyword explanation.
 - For targeted keyword updates, update the keyword entry and surrounding logic explanation based on code evidence.
+- For detail-document expansion requests, create a new child document under the parent system folder and update the parent document with a link and short summary.
 
 ## Completion Checklist
 
@@ -452,3 +499,4 @@ Reject or revise subsystem writeups that:
 - existing documents, when present, are either reused, continued, or rebuilt according to the user-selected mode
 - each subsystem writeup includes actionable keywords mapped to code and logic
 - keyword-specific update requests enrich existing documents with newly verified code-backed information
+- detail-document expansion requests produce linked child documents under the system-specific documentation folder

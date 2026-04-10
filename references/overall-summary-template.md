@@ -41,6 +41,7 @@ Suggested filename:
 - which important documents were newly created
 - which important documents were updated from existing repository documentation
 - which old documents were left unused because the workflow chose rebuild mode
+- which systems have important child detail documents for deeper reading
 
 ## 7. Open Questions
 

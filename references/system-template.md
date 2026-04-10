@@ -85,32 +85,39 @@ When existing documentation is in scope, do not merge old claims into the featur
 - where the old documentation conflicted with the code
 - which important implementation details were missing from the old documentation
 
-## 8. Data and State
+## 8. Related Detail Documents
+
+- child detail documents that belong under this subsystem, if any
+- what question or detail each child document covers
+- where the parent document should link to each child document
+- short parent-document summary text for each child document when applicable
+
+## 9. Data and State
 
 - core entities or models
 - persistence or storage dependencies
 - important state transitions
 
-## 9. Tests and Evidence
+## 10. Tests and Evidence
 
 - tests that validate key behavior
 - file paths supporting the major claims
 
 For important features, cite the most relevant implementation files, not just top-level directories.
 
-## 10. Risks and Constraints
+## 11. Risks and Constraints
 
 - high, medium, and low risks
 - coupling points
 - hidden assumptions
 - technical debt
 
-## 11. Open Questions
+## 12. Open Questions
 
 - `[needs-confirmation]` items
 - recommended next files or runtime checks
 
-## 12. Confidence-Annotated Findings
+## 13. Confidence-Annotated Findings
 
 List the most important conclusions with labels:
 

@@ -19,6 +19,7 @@
 - Requires each subsystem document to include a keyword index that maps grep-friendly terms to code locations and logic.
 - Allows multiple synonyms or aliases to point to the same keyword explanation so grep lookups converge on one canonical entry.
 - Supports targeted updates to existing documents: a user can name a keyword and the skill will read code, enrich that keyword entry, and write the result back into the relevant document.
+- Supports creating focused child detail documents from existing system docs: the skill reads the parent doc, reads the relevant code, writes a new child doc under the system folder, and updates the parent doc with a link and summary.
 - Produces a final top-down overview summary after all detailed work is complete.
 
 - 将仓库阅读任务按“工程交接”标准执行，而不是停留在表层总结。
@@ -34,6 +35,7 @@
 - 要求每个子系统文档都包含关键词索引，帮助用户通过 grep 关键词快速定位代码和对应逻辑说明。
 - 允许多个同义词或别名指向同一个关键词解释，避免同一概念重复写多份说明。
 - 支持对已有文档做定点补写：用户可以指定某个关键词，skill 会阅读相关代码并把这个关键词对应的信息补进文档。
+- 支持从已有系统文档中拆出细节子文档：skill 会先读父文档，再读相关代码，在系统子目录下新建细节文档，并回写父文档的链接和摘要。
 - 在所有细节文档完成后，再生成一份顶层纵览总结。
 
 ## Workflow | 工作流
@@ -136,6 +138,10 @@ The same keyword mechanism also supports targeted enrichment of existing documen
 
 同一套关键词机制也支持对已有文档做定点增强：如果用户指定某个关键词，skill 会阅读相关代码，并把新验证到的细节补进对应文档条目。
 
+The skill also supports a larger-granularity path: when the user asks for a dedicated document about a subsystem detail or feature, it creates a child detail document under the system-specific documentation folder instead of only editing the parent document inline.
+
+这个 skill 还支持更大粒度的增量路径：如果用户要求围绕某个子系统细节或功能单独成文，它会在系统对应的文档子目录下创建细节子文档，而不只是把内容直接塞回父文档。
+
 ### Final Outputs | 最终产物
 
 - A merged final repository document based on all subsystem writeups
@@ -195,6 +201,7 @@ If existing related documents are detected, the workflow does not silently reuse
 ├── agents/
 │   └── openai.yaml
 └── references/
+    ├── detail-doc-template.md
     ├── existing-docs-inventory-template.md
     ├── final-doc-template.md
     ├── overall-summary-template.md
@@ -207,6 +214,7 @@ If existing related documents are detected, the workflow does not silently reuse
 - `SKILL.md`: Main workflow and delegation rules.
 - `agents/openai.yaml`: UI metadata for the skill.
 - `references/pre-reading-artifacts.md`: Templates for scan and planning documents.
+- `references/detail-doc-template.md`: Template for standalone child detail documents created from existing system docs.
 - `references/existing-docs-inventory-template.md`: Template for detecting and mapping existing repository documents.
 - `references/system-template.md`: Required template for subsystem writeups.
 - `references/final-doc-template.md`: Template for the merged final repository document.
@@ -215,6 +223,7 @@ If existing related documents are detected, the workflow does not silently reuse
 - `SKILL.md`：主流程与多 agent 协作规则。
 - `agents/openai.yaml`：该技能的界面元数据。
 - `references/pre-reading-artifacts.md`：前期扫描与规划文档模板。
+- `references/detail-doc-template.md`：从已有系统文档拆出的细节子文档模板。
 - `references/existing-docs-inventory-template.md`：已有文档检测与映射清单模板。
 - `references/system-template.md`：子系统文档模板。
 - `references/final-doc-template.md`：最终整合文档模板。

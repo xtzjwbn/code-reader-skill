@@ -42,6 +42,8 @@ One subsection per subsystem using a normalized summary of the subsystem writeup
 - major doc-code mismatches that changed the final understanding
 - where the final output intentionally diverged from older documentation
 
+Also mention major child detail documents when they are important extension reading for a subsystem.
+
 ## 7. Core Features and End-to-End Flows
 
 Focus on the highest-value flows across subsystem boundaries.
