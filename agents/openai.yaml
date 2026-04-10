@@ -1,0 +1,4 @@
+interface:
+  display_name: "Code Reader Skill"
+  short_description: "Read large repos with multi-agent system-level synthesis."
+  default_prompt: "Use $code-reader-skill to read this repository with a total-control agent, a consistency-control agent, and subsystem readers, then produce unified engineering documentation."
